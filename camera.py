@@ -1,5 +1,6 @@
 import cv2
 from mask import Mask
+from audio_output import say
 
 class Camera:
     def __init__(self, window_name):
@@ -16,7 +17,16 @@ class Camera:
             self.frame = mask.draw_percentage(self.frame)
 
     def draw(self):
-        pass
+        # capture webcam input
+        _, self.frame = self._cap.read()
+        self.apply_masks()
+        self.dominant_mask = max(self.masks)
+
+    def draw_loop(self):
+        # capture webcam input
+        _, self.frame = self._cap.read()
+        self.apply_masks()
+        self.dominant_mask = max(self.masks)
 
     def destroy(self):
         # release the capture
@@ -33,12 +43,18 @@ class Webcam(Camera):
         self._cap.set(cv2.CAP_PROP_FRAME_WIDTH,  640)
         self._cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
-    def draw(self):
-        # capture webcam input
-        _, self.frame = self._cap.read()
-        self.apply_masks()
+    def draw_loop(self):
+        super().draw_loop()
         # draw output of webcam
         cv2.imshow(self.window_name, self.frame)
+    
+    def draw(self):
+        super().draw()
+        # audible output
+        mask = self.dominant_mask
+        text = f"{mask.name} is {mask.percentage}"
+        print(text)
+        say(text)
 
     def destroy(self):
         # release the capture

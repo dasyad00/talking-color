@@ -8,6 +8,7 @@ ColorRGB = namedtuple("ColorRGB", ["R", "G", "B"])
 ColorHSV = namedtuple("ColorHSV", ["H", "S", "V"])
 
 if __name__ == "__main__":
+    import sys
     # Define windows
     camera = Webcam()
 
@@ -30,13 +31,20 @@ if __name__ == "__main__":
             ]
     for color in color_masks:
         camera.add_mask(color)
-    # Drawing loop
-    while(True):
-        camera.draw()
 
+    if "-v" in sys.argv:
+        # Drawing loop
+        while(True):
+            camera.draw_loop()
+
+            # allow exit when 'q' is pressed
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+    else:
+        # Take image
+        camera.draw()
         # allow exit when 'q' is pressed
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+        cv2.waitKey(0)
 
     # When everything done, release the capture
     camera.destroy()
