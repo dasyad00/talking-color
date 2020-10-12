@@ -1,17 +1,15 @@
+import time
 from collections import namedtuple
 import cv2
 
 from mask import Mask, MaskHSV
-from camera import Webcam
+from camera import Webcam, Camera, PiCamera
 
 ColorRGB = namedtuple("ColorRGB", ["R", "G", "B"])
 ColorHSV = namedtuple("ColorHSV", ["H", "S", "V"])
 
 if __name__ == "__main__":
     import sys
-
-    # Define windows
-    camera = Webcam()
 
     hue_colors = {
         "red": (-45, 15),
@@ -47,22 +45,25 @@ if __name__ == "__main__":
     #     for name, color in rgb_colors.items()
     # ]
     # for color in color_masks:
+
+    camera: Camera
+    # Define camera
+    if "-d" in sys.argv:
+        # Debug mode - use webcam
+        camera = Webcam()
+    else:
+        # Normal mode - attempt to use RPi camera
+        camera = PiCamera()
+
     for mask in hsv_masks:
         camera.add_mask(mask)
 
     if "-v" in sys.argv:
         # Drawing loop
-        while True:
-            camera.draw_loop()
-
-            # allow exit when 'q' is pressed
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+        camera.process_video()
     else:
-        # Take image
-        camera.draw()
-        # allow exit when 'q' is pressed
-        cv2.waitKey(0)
+        # Single image
+        camera.process_image()
 
     # When everything done, release the capture
     camera.destroy()

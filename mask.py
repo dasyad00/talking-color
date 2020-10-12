@@ -19,7 +19,6 @@ class Mask:
         self.name = name
         self.color_rgb = color_rgb
         self.ratio = 0.0
-        self.percentage = 0
 
     def __gt__(self, other):
         return self.ratio > other.ratio
@@ -43,17 +42,23 @@ class Mask:
 
         return mask
 
-    def draw_percentage(self, frame):
+    def calculate_ratio(self, frame):
         mask = self.calc_mask(frame)
         self.ratio = cv2.countNonZero(mask) / (frame.size / 3)
-        print(f"ratio {self.name} percentage={self.ratio}")
-        self.percentage = '{:03.1f}%'.format(self.ratio * 100)
-        print(f"{self.name} percentage={self.percentage}")
+        return self.ratio
+
+    @property
+    def percentage(self):
+        return '{:03.1f}%'.format(self.ratio * 100)
+
+    def draw_percentage(self, frame):
+        ratio = self.calculate_ratio(frame)
+        percentage = '{:03.1f}%'.format(ratio * 100)
 
         # add text
         cv2.putText(
             frame,
-            '{}: {}'.format(self.name, self.percentage),
+            '{}: {}'.format(self.name, percentage),
             (10, 25 * self.id),
             cv2.FONT_HERSHEY_SIMPLEX,
             fontScale=1,
@@ -97,9 +102,3 @@ class MaskHSV(Mask):
             mask = cv2.bitwise_and(mask, extra_mask)
 
         return mask
-
-    def draw_percentage(self, frame, color_rgb=None):
-        return super().draw_percentage(frame)
-
-    def draw_mask(self, frame, color_rgb=None):
-        super().draw_mask(frame, color_rgb)
