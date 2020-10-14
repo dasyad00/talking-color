@@ -1,9 +1,9 @@
-import time
 from collections import namedtuple
 import cv2
 
-from mask import Mask, MaskHSV
-from camera import Webcam, Camera, PiCamera
+from talking_color.algorithms.color_detect import ColorDetect
+from talking_color.algorithms.mask_hsv import MaskHSV
+from talking_color.camera import Webcam, PiCamera, Camera
 
 ColorRGB = namedtuple("ColorRGB", ["R", "G", "B"])
 ColorHSV = namedtuple("ColorHSV", ["H", "S", "V"])
@@ -27,33 +27,18 @@ if __name__ == "__main__":
         for name, hue_range in hue_colors.items()
     ]
 
-    # rgb_colors = {
-    #     "white": (255, 255, 255),
-    #     "black": (0, 0, 0),
-    #     "red": (255, 0, 0),
-    #     "yellow": (255, 255, 0),
-    #     "green": (0, 255, 0),
-    #     "blue": (0, 0, 255),
-    #     "purple": (128, 0, 128),
-    #     "orange": (255, 165, 0)
-    # }
-    # color_masks = [
-    #     Mask(
-    #         name=name,
-    #         color_rgb=ColorRGB(color[0], color[1], color[2])
-    #     )
-    #     for name, color in rgb_colors.items()
-    # ]
-    # for color in color_masks:
-
     camera: Camera
     # Define camera
     if "-d" in sys.argv:
         # Debug mode - use webcam
-        camera = Webcam()
+        camera = Webcam(
+            color_detect=ColorDetect()
+        )
     else:
         # Normal mode - attempt to use RPi camera
-        camera = PiCamera()
+        camera = PiCamera(
+            color_detect=ColorDetect()
+        )
 
     for mask in hsv_masks:
         camera.add_mask(mask)
