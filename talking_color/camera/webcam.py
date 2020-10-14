@@ -9,8 +9,8 @@ class Webcam(Camera):
     https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_gui/py_video_display/py_video_display.html
     """
 
-    def __init__(self, window_name="Webcam", color_detect=None):
-        super().__init__(window_name, color_detect)
+    def __init__(self, window_name="Webcam", algorithm=None):
+        super().__init__(window_name, algorithm)
         # define webcam input
         self.capture = cv2.VideoCapture(0)
         # define window size
@@ -23,9 +23,9 @@ class Webcam(Camera):
             _, frame = self.capture.read()
 
             # annotate frame
-            drawn_frame = self.apply_masks(frame, draw_on_frame=True)
+            new_frame = self.algorithm.run(frame).labelled_frame
             # draw output of webcam
-            cv2.imshow(self.window_name, drawn_frame)
+            cv2.imshow(self.window_name, new_frame)
 
             # allow exit when 'q' is pressed
             if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -36,12 +36,12 @@ class Webcam(Camera):
         _, frame = self.capture.read()
 
         # process image
-        self.apply_masks(frame)
+        frame = self.algorithm.run(frame).labelled_frame
 
         # display the image on screen
         cv2.imshow("Image", frame)
         # also output with text and audio
-        self.output_dominant_mask(frame)
+        self.output_sound(frame)
 
         # allow exit when any key is pressed
         print("Press any key to exit.")

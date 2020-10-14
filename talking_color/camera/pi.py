@@ -1,6 +1,7 @@
+import time
+
 import cv2
 
-from talking_color.algorithms.mask import Mask
 from talking_color.camera.camera import Camera, CAMERA_WIDTH, CAMERA_HEIGHT
 
 
@@ -10,7 +11,7 @@ class PiCamera(Camera):
     https://www.pyimagesearch.com/2015/03/30/accessing-the-raspberry-pi-camera-with-opencv-and-python/
     """
 
-    def __init__(self, window_name="PiCamera", color_detect=None):
+    def __init__(self, window_name="PiCamera", algorithm=None):
         # Ensure object is created in RPi
         if not self.can_run():
             raise RuntimeError("PiCamera only allowed to be run via RPi. "
@@ -28,15 +29,12 @@ class PiCamera(Camera):
 
         # Allow camera to warm up
         time.sleep(0.1)
-        super().__init__(window_name, color_detect)
+        super().__init__(window_name, algorithm)
 
     @staticmethod
     def can_run() -> bool:
         import os
         return os.uname()[4][:3] == "arm"
-
-    def add_mask(self, mask: Mask):
-        super().add_mask(mask)
 
     def draw(self):
         self.camera.capture(self.rawCapture, format="bgr")
@@ -52,7 +50,7 @@ class PiCamera(Camera):
             # grab the raw numpy array representing the image
             image = frame.array
 
-            self.apply_masks(image)
+            image = self.algorithm.run(image).labelled_frame
 
             # show the frame
             cv2.imshow("Frame", image)
@@ -71,12 +69,12 @@ class PiCamera(Camera):
         image = self.rawCapture.array
 
         # process image
-        self.apply_masks(image)
+        image = self.algorithm(image).run().labelled_frame
 
         # display the image on screen
         cv2.imshow("Image", image)
         # also output with text and audio
-        self.output_dominant_mask(image)
+        self.output_sound(image)
 
         # allow exit when any key is pressed
         print("Press any key to exit.")

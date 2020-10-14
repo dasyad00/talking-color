@@ -1,5 +1,9 @@
-import numpy as np
+from typing import List
+
 import cv2
+import numpy as np
+
+from talking_color.algorithms.base_algorithm import ColorDetectionAlgorithm, ColorDetectionResult, ColorResult
 
 ID = 1
 COLOR_INTERVAL = 60
@@ -49,7 +53,7 @@ class Mask:
         return '{:03.1f}%'.format(self.ratio * 100)
 
     def draw_percentage(self, frame):
-        ratio = self.calculate_ratio(frame)
+        ratio = self.ratio
         percentage = '{:03.1f}%'.format(ratio * 100)
 
         # add text
@@ -70,3 +74,20 @@ class Mask:
         cv2.imshow(self.name, result)
 
 
+class MaskAlgorithm(ColorDetectionAlgorithm):
+    def __init__(self, masks: List[Mask] = []):
+        self.masks = masks
+
+    def run(self, frame) -> ColorDetectionResult:
+        for mask in self.masks:
+            mask.calculate_ratio(frame)
+            frame = mask.draw_percentage(frame)
+
+        dominant_mask = max(self.masks)
+        return ColorDetectionResult(
+            [ColorResult(dominant_mask.name, dominant_mask.ratio)],
+            frame
+        )
+
+    def add_mask(self, mask: Mask):
+        self.masks.append(mask)

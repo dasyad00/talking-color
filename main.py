@@ -1,12 +1,9 @@
-from collections import namedtuple
 import cv2
 
-from talking_color.algorithms.color_detect import ColorDetect
+from talking_color.algorithms.eucledian_rgb import EucledianRGB
+from talking_color.algorithms.mask import MaskAlgorithm
 from talking_color.algorithms.mask_hsv import MaskHSV
 from talking_color.camera import Webcam, PiCamera, Camera
-
-ColorRGB = namedtuple("ColorRGB", ["R", "G", "B"])
-ColorHSV = namedtuple("ColorHSV", ["H", "S", "V"])
 
 if __name__ == "__main__":
     import sys
@@ -27,21 +24,16 @@ if __name__ == "__main__":
         for name, hue_range in hue_colors.items()
     ]
 
+    algorithm = EucledianRGB()
+    # algorithm = MaskAlgorithm(hsv_masks)
     camera: Camera
     # Define camera
     if "-d" in sys.argv:
         # Debug mode - use webcam
-        camera = Webcam(
-            color_detect=ColorDetect()
-        )
+        camera = Webcam(algorithm=algorithm)
     else:
         # Normal mode - attempt to use RPi camera
-        camera = PiCamera(
-            color_detect=ColorDetect()
-        )
-
-    for mask in hsv_masks:
-        camera.add_mask(mask)
+        camera = PiCamera(algorithm=algorithm)
 
     if "-v" in sys.argv:
         # Drawing loop

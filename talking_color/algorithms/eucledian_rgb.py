@@ -1,16 +1,40 @@
-import pandas as pd
+import cv2
 import numpy as np
+import pandas as pd
 import scipy.cluster
-from webcolors import hex_to_rgb
 from scipy.spatial import distance
+from webcolors import hex_to_rgb
+
+from talking_color.algorithms.base_algorithm import ColorDetectionAlgorithm, ColorResult, ColorDetectionResult
 
 
-class ColorDetect:
+class EucledianRGB(ColorDetectionAlgorithm):
+    num_clusters = 5
+
     def __init__(self):
         # read color training data
         df_train = pd.read_csv('colour.csv', delimiter=';')
         # initiate color rgb dataframe
         self.df_colors = self._get_processed_rgb_df(df_train)
+
+    def run(self, frame) -> ColorDetectionResult:
+        color = self.get_most_common_color(self.num_clusters, frame)
+        color_name = self.calc_distance(color, self.num_clusters)
+        ratio = 1.0
+
+        cv2.putText(
+            frame,
+            '{}: {}'.format(color_name, ratio),
+            (10, 25),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            fontScale=1,
+            color=(255, 255, 255),
+            lineType=2
+        )
+        return ColorDetectionResult(
+            [ColorResult(color_name, 1.0)],
+            frame
+        )
 
     @staticmethod
     def _get_processed_rgb_df(df_train) -> pd.DataFrame:
@@ -25,11 +49,6 @@ class ColorDetect:
         df_final = df_train.join(df)
         df_final['RGB'] = list(zip(df_final['R'], df_final['G'], df_final['B']))
         return df_final
-
-    def get_most_common_color_name(self, num_clusters, frame):
-        color = self.get_most_common_color(num_clusters, frame)
-        color_name = self.calc_distance(color, num_clusters)
-        return color_name
 
     @staticmethod
     def get_most_common_color(num_clusters, frame):
@@ -48,9 +67,6 @@ class ColorDetect:
         peak = codes[index_max]
         print(type(peak))
         return peak
-
-    def say_most_common_color(self, num_clusters, frame):
-        pass
 
     def calc_distance(self, rgb_value, k=5):
         df_colors = self.df_colors.copy()
