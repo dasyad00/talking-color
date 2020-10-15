@@ -1,3 +1,5 @@
+import time
+
 import cv2
 import numpy as np
 import pandas as pd
@@ -18,7 +20,8 @@ class EucledianRGB(ColorDetectionAlgorithm):
         self.df_colors = self._get_processed_rgb_df(df_train)
 
     def run(self, frame) -> ColorDetectionResult:
-        color = self.get_most_common_color(self.num_clusters, frame)
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        color = self.get_most_common_color(self.num_clusters, rgb_frame)
         color_name = self.calc_distance(color, self.num_clusters)
         ratio = 1.0
 
@@ -65,7 +68,6 @@ class EucledianRGB(ColorDetectionAlgorithm):
         counts, bins = np.histogram(vecs, len(codes))  # count occurrences
         index_max = np.argmax(counts)  # find most frequent
         peak = codes[index_max]
-        print(type(peak))
         return peak
 
     def calc_distance(self, rgb_value, k=5):
@@ -81,6 +83,7 @@ class EucledianRGB(ColorDetectionAlgorithm):
 
         if not final_color:
             final_color = self.majority_vote(df_colors, k)
+
         return final_color
 
     @staticmethod
