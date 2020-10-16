@@ -1,5 +1,3 @@
-import time
-
 import cv2
 import numpy as np
 import pandas as pd
@@ -12,15 +10,16 @@ from talking_color.algorithms.base_algorithm import ColorDetectionAlgorithm, Col
 
 class EucledianRGB(ColorDetectionAlgorithm):
     num_clusters = 5
+    color_space = 'RGB'
 
     def __init__(self):
         # read color training data
         df_train = pd.read_csv('colour.csv', delimiter=';')
         # initiate color rgb dataframe
-        self.df_colors = self._get_processed_rgb_df(df_train)
+        self.df_colors = self._get_processed_df(df_train)
 
     def run(self, frame) -> ColorDetectionResult:
-        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        rgb_frame = self._get_frame_in_color_space(frame)
         color = self.get_most_common_color(self.num_clusters, rgb_frame)
         color_name = self.calc_distance(color, self.num_clusters)
         ratio = 1.0
@@ -39,8 +38,11 @@ class EucledianRGB(ColorDetectionAlgorithm):
             frame
         )
 
+    def _get_frame_in_color_space(self, frame):
+        return cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
     @staticmethod
-    def _get_processed_rgb_df(df_train) -> pd.DataFrame:
+    def _get_processed_df(df_train) -> pd.DataFrame:
         # convert hex code to RGB tuple
         rgb_tuple_list = []
         df_train['RGB'] = 0
@@ -74,7 +76,7 @@ class EucledianRGB(ColorDetectionAlgorithm):
         df_colors = self.df_colors.copy()
         df_colors['distance'] = 0
         for i in range(len(df_colors)):
-            color_in_list = df_colors.loc[i, 'RGB']
+            color_in_list = df_colors.loc[i, self.color_space]
             df_colors.loc[i, 'distance'] = distance.euclidean(rgb_value, color_in_list)
         df_colors.sort_values(['distance'], inplace=True)
         df_colors = df_colors.reset_index()

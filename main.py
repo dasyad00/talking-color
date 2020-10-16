@@ -1,5 +1,7 @@
 import cv2
 
+from talking_color.algorithms.eucledian_cielab import EucledianCIELAB
+from talking_color.algorithms.eucledian_hsv import EucledianHSV
 from talking_color.algorithms.eucledian_rgb import EucledianRGB
 from talking_color.algorithms.mask import MaskAlgorithm
 from talking_color.algorithms.mask_hsv import MaskHSV
@@ -25,7 +27,9 @@ def run():
         for name, hue_range in hue_colors.items()
     ]
 
-    algorithm = EucledianRGB()
+    # algorithm = EucledianRGB()
+    # algorithm = EucledianHSV()
+    algorithm = EucledianCIELAB()
     # algorithm = MaskAlgorithm(hsv_masks)
     camera: Camera
     # Define camera
