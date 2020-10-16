@@ -3,8 +3,8 @@ import numpy as np
 from audio_output import say
 from talking_color.algorithms.base_algorithm import ColorDetectionAlgorithm
 
-CAMERA_WIDTH = 640
-CAMERA_HEIGHT = 480
+CAMERA_WIDTH = 320
+CAMERA_HEIGHT = 240
 
 
 class Camera:
