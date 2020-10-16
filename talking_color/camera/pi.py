@@ -2,6 +2,8 @@ import time
 
 import cv2
 
+from rpi_ws281x import *
+
 from talking_color.camera.camera import Camera, CAMERA_WIDTH, CAMERA_HEIGHT
 
 
@@ -27,9 +29,18 @@ class PiCamera(Camera):
         # grab reference to the raw camera capture
         self.rawCapture = PiRGBArray(self.camera)
 
+        # setup lights
+        self.strip = Adafruit_NeoPixel(8, 18, 800000, 10, False, 255, 0)
+        self.strip.begin()
+
         # Allow camera to warm up
         time.sleep(0.1)
         super().__init__(window_name, algorithm)
+
+    def set_light_color(self, color):
+        for i in range(self.strip.numPixels()):
+            self.strip.setPixelColor(i, color)
+        self.strip.show()
 
     @staticmethod
     def can_run() -> bool:
@@ -65,6 +76,7 @@ class PiCamera(Camera):
 
     def process_image(self):
         # capture image and get np array
+        self.set_light_color(Color(255, 255, 255))
         self.camera.capture(self.rawCapture, format="bgr")
         image = self.rawCapture.array
 
@@ -79,3 +91,8 @@ class PiCamera(Camera):
         # allow exit when any key is pressed
         print("Press any key to exit.")
         cv2.waitKey(0)
+
+    def destroy(self):
+        super().destroy()
+        # clear lights
+        self.set_light_color(Color(0, 0, 0))
