@@ -2,7 +2,6 @@ import time
 
 import cv2
 
-from rpi_ws281x import *
 
 from talking_color.camera.camera import Camera, CAMERA_WIDTH, CAMERA_HEIGHT
 
@@ -30,6 +29,7 @@ class PiCamera(Camera):
         self.rawCapture = PiRGBArray(self.camera)
 
         # setup lights
+        from rpi_ws281x import Adafruit_NeoPixel, Color
         self.strip = Adafruit_NeoPixel(8, 18, 800000, 10, False, 255, 0)
         self.strip.begin()
 
