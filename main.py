@@ -5,7 +5,8 @@ from talking_color.algorithms.mask import MaskAlgorithm
 from talking_color.algorithms.mask_hsv import MaskHSV
 from talking_color.camera import Webcam, PiCamera, Camera
 
-if __name__ == "__main__":
+
+def run():
     import sys
 
     hue_colors = {
@@ -46,3 +47,7 @@ if __name__ == "__main__":
     camera.destroy()
     # Destroy all windows 
     cv2.destroyAllWindows()
+
+
+if __name__ == "__main__":
+    run()
